@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача</title>
+    <link rel="stylesheet" th:href="@{/css/taskDetails.css}" type="text/css">
+    <link th:replace="~{layout :: style_layout}">
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <form th:action="@{/tasks/{id}(id=${task.getTaskId()})}" th:method="post">
+        <div class="content">
+            <nav class="top-menu">
+                <ul>
+                    <li><a href="#description" class="menu-item" onclick="showSection('description')">Описание</a></li>
+                    <li><a href="#attachments" class="menu-item" onclick="showSection('attachments')">Вложения</a></li>
+                    <li><a href="#subtask" class="menu-item" onclick="showSection('subtask')">Подзадачи</a></li>
+                    <li><a href="#settings" class="menu-item" onclick="showSection('settings')">Настройки</a></li>
+                </ul>
+            </nav>
+            <div id="description" class="section active">
+                <div class="description-block">
+                    <h2 th:text="${task.getTaskName()}">Описание</h2>
+                    <p th:text="${'Сроки задачи: ' + #dates.format(task.startDate, 'yyyy.MM.dd') + ' - ' + #dates.format(task.startDate, 'yyyy.MM.dd')}"></p>
+                    <p th:text="${'Создатель: ' + task.createdBy.firstName + ' ' + task.createdBy.lastName}"></p>
+                    <p th:text="${'Ответсвенный: ' + task.responsible.firstName + ' ' + task.responsible.lastName}"></p>
+                </div>
+                <div class="executors-block">
+                    <h2>Исполнители</h2>
+                    <div class="participants">
+                        <ul th:each="employee : ${task_employee}">
+                            <li th:classappend="${(employee.complete.toString() == 'ACCEPTED' ? 'accepted' : (employee.complete.toString() == 'REFUSED') ? 'refused' : 'default')}">
+                                <span th:text="${employee.employees.firstName + ' ' + employee.employees.lastName}">Исполнитель</span>
+                                <div class="status">
+                                    <span class="status-text" th:text="${(employee.complete.toString() == 'ACCEPTED' ? 'Исполнено' : (employee.complete.toString() == 'REFUSED') ? 'Отклонено' : 'Ожидание')}">Ожидание</span>
+                                    <input type="image" class="status-checkbox" th:src="${(employee.complete.toString() == 'ACCEPTED' ? '/img/complete.png' : (employee.complete.toString() == 'REFUSED') ? '/img/cancel.png' : '/img/clock.png')}">
+                                </div>
+                            </li>
+                            <li th:classappend="${(employee.complete.toString() == 'ACCEPTED' ? 'accepted_comment' : (employee.complete.toString() == 'REFUSED') ? 'refused_comment' : 'default_comment')}" th:if="${employee.comment != null}">
+                                <span th:text="${employee.comment}">Комментарии</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="actions" th:if="${aut_employee}">
+                        <button type="button" class="btn-satisfy" onclick="showSection('comments')">Удовлетворить</button>
+                        <button type="button" class="btn-reject" onclick="showSection('comments')">Отказать</button>
+                    </div>
+                </div>
+                <div class="actions-block">
+                    <h2>Действие</h2>
+                    <ul class="actions">
+                        <li><a href="#">Редактировать</a></li>
+                        <li><a href="#">Удалить</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="attachments" class="section">
+                <h2>Вложения</h2>
+                <div class="attachment">
+                    <ul th:each="value : ${task_files}">
+                        <li onclick="toggleSelection(this)" th:data-file-id="${value.fileId}">
+                            <input type="checkbox" class="select-checkbox" hidden>
+                            <span th:text="${#strings.substring(value.pathFile, value.pathFile.lastIndexOf('\') + 1)}">Наименование</span>
+                            <div class="status">
+                                <a th:href="@{/tasks/{taskId}/{fileId}(taskId=${value.taskId},fileId=${value.fileId})}">
+                                    <span class="status-text">Скачать</span>
+                                </a>
+                                <input type="image" class="status-checkbox" src="/img/file-icon.png">
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="actions-block">
+                    <h2>Действие</h2>
+                    <ul class="actions">
+                        <li><a href="#" id="uploadLink" class="upload-link">Добавить вложение</a></li>
+                        <li><a href="#" onclick="deleteSelectedTasks()">Удалить вложение</a></li>
+                        <input type="file" id="fileInput" multiple>
+                    </ul>
+                </div>
+            </div>
+            <div id="subtask" class="section">
+                <h2>Подзадачи</h2>
+                <div class="attachment">
+                    <ul th:each="value : ${task.getSubTasks()}">
+                        <li onclick="toggleSelection(this)" th:data-file-id="${value.taskId}" th:classappend="${(value.getStatusId().getStatusName() == 'Исполнено' ? 'completed' : '')}">
+                            <input type="checkbox" class="select-checkbox" hidden>
+                            <div class="left-block">
+                                <span th:text="${value.getCreatedBy().getLastName() + ' ' + value.getCreatedBy().getFirstName()}">Наименование</span>
+                            </div>
+                            <div class="center-block">
+                                <span th:text="${value.getStatusId().getStatusName}">Статус задачи</span>
+                            </div>
+                            <div class="right-block">
+                                <a th:href="@{/tasks/{taskId}(taskId=${value.taskId})}">
+                                    <span class="status-text">Просмотреть</span>
+                                </a>
+                                <input type="image" class="status-checkbox" src="/img/task.png">
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="actions-block">
+                    <h2>Действие</h2>
+                    <ul class="actions">
+                        <li><a th:href="@{/tasks/{id}/new(id=${task.getTaskId()})}">Добавить подзадачу</a></li>
+                        <li><a href="#" onclick="deleteSelectedSubTasks()">Удалить подзадачу</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="settings" class="section">
+                <h2>Настройки</h2>
+                <p>Здесь будут настройки задачи.</p>
+            </div>
+            <div id="comments" class="section">
+                <h2>Комментарии</h2>
+                <div class="comments-block">
+                    <label for="comment">Комментарий:</label>
+                    <textarea id="comment" name="comment" rows="4" cols="50" maxlength="254"></textarea>
+                </div>
+                <div class="comment-actions">
+                    <button class="btn-satisfy" name="userAction" th:value="${isUserAction.ACCEPTED}">Удовлетворить</button>
+                    <button class="btn-reject" name="userAction" th:value="${isUserAction.REFUSED}">Отказать</button>
+                    <button class="btn-undo" th:onclick="|window.location.href='@{/tasks/{id}(id=${task.taskId})}'|">Отмена</button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </form>
+    <script src="/js/taskDetails.js"></script>
+</body>
+</html>

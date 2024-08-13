@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание группы</title>
+    <link th:replace="~{layout :: style_layout}">
+    <link rel="stylesheet" th:href="@{/css/groupCreation.css}" type="text/css">
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div class="container">
+        <h1>Создание группы</h1>
+        <form th:action="@{/group/new}" th:method="post">
+            <div class="form-group">
+                <label for="groupName">Название группы:</label>
+                <input type="text" id="groupName" name="groupName" required>
+            </div>
+            <div class="form-group">
+                <label>Добавить сотрудников:</label>
+                <div class="dual-list">
+                    <div class="list-container">
+                        <h3>Все сотрудники</h3>
+                        <select id="employeeSelect" name="allEmployees" multiple>
+                            <option th:each="employee : ${employees}"
+                                    th:value="${employee.employeeId}"
+                                    th:text="${employee.firstName + ' ' + employee.lastName}"></option>
+                        </select>
+                    </div>
+                    <div class="buttons-container">
+                        <button type="button" onclick="moveOptions('employeeSelect', 'selectedEmployees')">&gt;</button>
+                        <button type="button" onclick="moveOptions('selectedEmployees', 'employeeSelect')">&lt;</button>
+                    </div>
+                    <div class="list-container">
+                        <h3>Выбранные сотрудники</h3>
+                        <select id="selectedEmployees" name="selectedEmployees" multiple>
+                            <!-- Initially empty, options are moved here via buttons -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit">Сохранить группу</button>
+            </div>
+        </form>
+    </div>
+    <script src="/js/groupCreation.js"></script>
+</body>
+</html>

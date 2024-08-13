@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link th:fragment="style_layout" rel="stylesheet" th:href="@{/css/layout.css}" type="text/css">
+</head>
+<body>
+    <div th:fragment="sidebar" class="sidebar">
+        <div class="logo">
+            <img src="path/to/your/logo.png" alt="Logo">
+            <h2>My Application</h2>
+        </div>
+        <nav>
+            <a th:href="@{/employee}">
+                <img src="/img/employees.png">
+                Пользователи
+            </a>
+            <a th:href="@{/group}">
+                <img src="/img/groups.png">
+                Группы
+            </a>
+            <a th:href="@{/}">
+                <img src="/img/task.png">
+                Задачи
+            </a>
+            <a th:href="@{/settings}">
+                <img src="/img/settings.png">
+                Настройки
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

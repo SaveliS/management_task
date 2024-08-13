@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница</title>
+    <link th:replace="~{layout :: style_layout}">
+    <link th:replace="~{fragments/notification :: style_notification}">
+    <link rel="stylesheet" th:href="@{/css/main.css}" type="text/css">
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div th:replace="~{fragments/notification :: notification}"></div>
+    <div class="content">
+        <h1>Список задач</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Статус</th>
+                    <th>Название</th>
+                    <th>Дата начала</th>
+                    <th>Дата конца</th>
+                    <th>Ответсвенный</th>
+                    <th>Выполнен</th>
+                    <th>Вложения</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="task : ${tasks}" class="table-row" th:data-url="@{/tasks/{id}(id=${task.taskId})}">
+                    <td th:text="${task.createdBy != null ? task.statusId.statusName : 'Неизвестный'}"></td>
+                    <td th:text="${task.taskName}"></td>
+                    <td th:text="${#dates.format(task.startDate, 'yyyy-MM-dd')}"></td>
+                    <td th:text="${#dates.format(task.endDate, 'yyyy-MM-dd')}"></td>
+                    <td th:text="${task.responsible != null ? task.responsible.firstName + ' ' + task.responsible.lastName : 'Неизвестный'}"></td>
+                    <td th:text="${task.isCompleted ? 'Да' : 'Нет'}"></td>
+                    <td>
+                        <img src="/img/file-icon.png" alt="File Icon"/>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script src="/js/main.js"></script>
+</body>
+</html>
