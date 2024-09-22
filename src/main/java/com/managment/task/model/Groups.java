@@ -1,10 +1,14 @@
 package com.managment.task.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -16,6 +20,9 @@ public class Groups {
     private int groupId;
     @Column(name = "group_name")
     private String groupName;
+
+    @OneToMany(mappedBy = "groupIn")
+    private List<EmployeeGroups> employeeGroups = new ArrayList<>();
 
     public Groups(){}
 
@@ -37,5 +44,13 @@ public class Groups {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public List<EmployeeGroups> getEmployeeGroups() {
+        return employeeGroups;
+    }
+
+    public void setEmployeeGroups(List<EmployeeGroups> employeeGroups) {
+        this.employeeGroups = employeeGroups;
     }
 }

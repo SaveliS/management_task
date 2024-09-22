@@ -1,5 +1,7 @@
 package com.managment.task.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -12,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -52,6 +55,9 @@ public class Employees {
     @ManyToOne
     @JoinColumn(name = "positionid", referencedColumnName = "positionid")
     private Positions positionId;
+
+    @OneToMany(mappedBy = "employeeIn")
+    private List<EmployeeGroups> employeeGroups = new ArrayList<>();
 
     public Employees(){}
 
@@ -140,5 +146,14 @@ public class Employees {
 
     public void setEnable(boolean isEnable) {
         this.isEnable = isEnable;
+    }
+
+    
+    public List<EmployeeGroups> getEmployeeGroups() {
+        return employeeGroups;
+    }
+
+    public void setEmployeeGroups(List<EmployeeGroups> employeeGroups) {
+        this.employeeGroups = employeeGroups;
     }
 }

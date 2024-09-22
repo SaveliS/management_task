@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать шаблон</title>
+    <link th:replace="~{layout :: style_layout}">
+    <link th:replace="~{fragments/notification :: style_notification}">
+    <link rel="stylesheet" th:href="@{/css/newTemplate.css}" type="text/css">
+</head>
+<body>
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div th:replace="~{fragments/notification :: notification}"></div>
+
+    <div class="content">
+        <h1>Создание шаблона</h1>
+        <form th:action="@{/template/new}" th:object="${template}" method="post">
+            <div class="form-group">
+                <label for="taskName">Название шаблона:</label>
+                <input type="text" id="taskName" th:field="*{taskName}" required/>
+            </div>
+            <div class="group-container">
+                <div class="form-group">
+                    <label for="category">Категория:</label>
+                    <select id="category" th:field="${selectedResponsible}" th:value="${selectedResponsible}" name="selectedResponsible" required>
+                        <option value="">-- Выберите категорию --</option>
+                        <option value="groups" th:selected="${selectedResponsible == 'groups'}">Группы</option>
+                        <option value="users" th:selected="${selectedResponsible == 'users'}">Пользователи</option>
+                    </select>
+                </div>
+                <div class="form-group" id="groups_selected" style="display: none;">
+                    <label for="group">Группы:</label>
+                    <select id="group" name="group" th:field="${groupsEmpl}">
+                        <option value="">-- Выберите группу --</option>
+                        <option th:each="group : ${groupsEmpl}" th:value="${group.groupId}" th:text="${group.groupName}"></option>
+                    </select>
+                    <button type="button" class="add-button" onclick="addGroup()">Добавить группы</button>
+                </div>
+                <div class="form-group" id="users_selected" style="display: none;">
+                    <label for="user">Пользователи:</label>
+                    <select id="user" name="user" th:field="${allEmployee}">
+                        <option value="">-- Выберите пользователя --</option>
+                        <option th:each="user : ${allEmployee}" th:value="${user.employeeId}" th:text="${user.firstName + ' ' + user.lastName}"></option>
+                    </select>
+                    <button type="button" class="add-button" onclick="addUser()">Добавить пользователя</button>
+                </div>
+                <div class="form-group">
+                    <label for="list-responsible">Исполнители:</label>
+                    <ul id="list-responsible"></ul>
+                </div>
+            </div>
+
+            <div class="group-container" id="group-container-attribute">
+                <ul th:each="attributeTask, iterStat : ${template.attributeTask}" class="group-attribute">
+                    <li class="group-attribute-li"> 
+                        <input type="hidden" th:field="*{attributeTask[__${iterStat.index}__].attributeTaskKey.taskId}" />
+                        
+                        <div class="form-group">
+                            <label for="attribute_name">Название:</label>
+                            <input type="text" th:field="*{attributeTask[__${iterStat.index}__].attributeTaskKey.attribute_name}" id="attribute_name_${iterStat.index}" />
+                            <label for="attribute_value">Значение:</label>
+                            <input type="text" th:field="*{attributeTask[__${iterStat.index}__].attribute_value}" id="attribute_value_${iterStat.index}" />
+                        </div>
+                        <button type="button" class="delete-button" onclick="removeAttributeTask(this)">Удалить</button>
+                    </li>
+                </ul>
+                <button type="button" onclick="addAttributeTask()">Добавить новый атрибут</button>
+            </div>
+
+            <div class="form-group">
+                <label for="comments">Комментарии:</label>
+                <textarea id="comments" th:field="*{comment}" rows="5" required></textarea>
+            </div>
+
+            <div class="buttons">
+                <button type="button" class="back-button" onclick="window.location.href='/'">Назад</button>
+                <button type="submit">Создать шаблон</button>
+            </div>
+            <input type="hidden" th:field="*{statusId.statusId}">
+            <input type="hidden" th:field="*{createdBy}">
+            <input type="hidden" th:field="*{responsible}">
+            <input type="hidden" th:field="*{isCompleted}">
+            <input type="hidden" th:field="*{isTemplated}">
+            <input type="hidden" th:field="*{startDate}">
+            <input type="hidden" th:field="*{endDate}">
+        </form>
+    </div>
+
+    <script src="/js/templateNew.js"></script>
+</body>
+</html>

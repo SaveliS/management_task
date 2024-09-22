@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.managment.task.model.EmployeeGroups;
+import com.managment.task.model.Groups;
 import com.managment.task.repository.EmployeeGroupsRepository;
 
 @Service
@@ -22,6 +23,11 @@ public class EmployeeGroupsService {
 
     public Iterable<EmployeeGroups> findAllEmployeeGroups(){
         return employeeGroupsRepository.findAll();
+    }
+
+      // Метод для получения всех уникальных групп
+    public List<Groups> getAllUniqueGroups() {
+        return employeeGroupsRepository.findAllUniqueGroups();
     }
 
     public Map<String,List<EmployeeGroups>> findEmployeeSortGroups(){

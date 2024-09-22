@@ -50,7 +50,7 @@
                 <div class="actions-block">
                     <h2>Действие</h2>
                     <ul class="actions">
-                        <li><a href="#">Редактировать</a></li>
+                        <li><a th:href="@{/tasks/{id}/edit(id=${task.getTaskId()})}">Редактировать</a></li>
                         <li><a href="#">Удалить</a></li>
                     </ul>
                 </div>

@@ -174,4 +174,21 @@ public class TaskController {
 
         return "redirect:/";
     }
+
+    @GetMapping("/{id}/edit")
+    public String editTask(@PathVariable int id, Model model){
+        model.addAttribute("task", taskService.findTaskById(id));
+        model.addAttribute("employee", employeeService.findAllEmployee());
+        model.addAttribute("task_status", taskStatusService.findAllTaskStatus());
+        return "task/editTask";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String editTask(@ModelAttribute("task") Tasks task,@PathVariable int id, RedirectAttributes redirectAttributes){
+        task.setTaskId(id);
+        System.out.println(task.toString());
+        taskService.updateTask(task);
+        redirectAttributes.addFlashAttribute("message","Редатирование успешно завершено.");
+        return "redirect:/";
+    }
 }

@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создать задачу</title>
+    <title>Редактировать задачу</title>
     <link th:replace="~{layout :: style_layout}">
     <link th:replace="~{fragments/notification :: style_notification}">
-    <link rel="stylesheet" th:href="@{/css/newTask.css}" type="text/css">
+    <link rel="stylesheet" th:href="@{/css/editTask.css}" type="text/css">
 </head>
 <body>
     <div th:replace="~{layout :: sidebar}"></div>
     <div th:replace="~{fragments/notification :: notification}"></div>
-    <div class="container">
-        <h1>Создание задачи</h1>
+
+    <div class="content">
+        <h1>Редактирование задачи</h1>
         <div th:if="${messageFile}" class="message" id="messageFile">
-            <p th:text="${messageFile}"></p> 
+            <p th:text="${messageFile}"></p>
             <!-- Сообщение ошибки в случае, когда файл не выбран -->
         </div>
-        <form th:action="@{/tasks/new}" th:object="${task}" method="post" enctype="multipart/form-data">
+        <form th:action="@{/tasks/{id}/edit(id=${task.taskId})}" th:object="${task}" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="statusId">Статус:</label>
                 <select id="statusId" th:field="*{statusId}" required>
@@ -25,7 +26,7 @@
                     th:each="value : ${task_status}"
                     th:text="${value.getStatusName()}"
                     th:value="${value.getStatusId()}"
-                    th:selected="${value.statusId==0}">Список статусов задач</option>
+                    th:selected="${value.getStatusId()} == ${task.statusId.statusId}">Список статусов задач</option>
                 </select>
             </div>
             <div class="form-group">
@@ -47,30 +48,28 @@
                     th:each="value : ${employee}"
                     th:text="${value.getLastName() + ' ' + value.getFirstName()}"
                     th:value="${value.getEmployeeId()}"
-                    th:selected="${value.employeeId==0}"></option>
+                    th:selected="${value.getEmployeeId()} == ${task.createdBy.employeeId}"></option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="responsible">Ответсвенный:</label>
+                <label for="responsible">Ответственный:</label>
                 <select id="responsible" th:field="*{responsible}" required>
                     <option
                     th:each="value : ${employee}"
                     th:text="${value.getLastName() + ' ' + value.getFirstName()}"
                     th:value="${value.getEmployeeId()}"
-                    th:selected="${value.employeeId==0}"></option>
+                    th:selected="${value.getEmployeeId()} == ${task.responsible.employeeId}"></option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="fileUpload">Добавить вложение:</label>
-                <input type="file" multiple="multiple" id="fileUpload" name="fileUpload"/>
-            </div>
             <div class="buttons">
-                <button type="button" class="back-button" onclick="window.location.href='/'">Назад</button>
-                <button type="submit">Создать задачу</button>
+                <button type="button" class="back-button" onclick="window.location.href='/tasks'">Назад</button>
+                <button type="submit">Сохранить изменения</button>
             </div>
             <input type="hidden" th:field="*{parentTasks}">
+            <input type="hidden" th:field="*{taskId}"
         </form>
     </div>
-    <script src="/js/newTask.js"></script>
+
+    <script src="/js/editTask.js"></script>
 </body>
 </html>

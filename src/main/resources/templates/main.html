@@ -13,6 +13,9 @@
     <div th:replace="~{fragments/notification :: notification}"></div>
     <div class="content">
         <h1>Список задач</h1>
+        <div class="button-container">
+            <button th:onclick="|window.location.href='@{/tasks/new}'|">Создать задачу</button>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -20,7 +23,7 @@
                     <th>Название</th>
                     <th>Дата начала</th>
                     <th>Дата конца</th>
-                    <th>Ответсвенный</th>
+                    <th>Ответственный</th>
                     <th>Выполнен</th>
                     <th>Вложения</th>
                 </tr>

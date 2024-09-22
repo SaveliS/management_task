@@ -1,6 +1,7 @@
 package com.managment.task.model;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class Tasks {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "taskid")
     private int taskId;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "statusid", referencedColumnName = "statusid")
     private TaskStatus status;
     @Column(name = "taskname")
@@ -31,41 +32,51 @@ public class Tasks {
     private Date startDate;
     @Column(name = "enddate")
     private Date endDate;
+    @Column(name = "comment")
+    private String comment;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "createdby" , referencedColumnName = "employeeid")
     private Employees createdBy; // Создатель задачи
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "responsible", referencedColumnName = "employeeid")
     private Employees responsible; // Ответсвенный испольнитель
+
+    @OneToMany(mappedBy = "tasks", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttributeTask> attributeTask = new ArrayList<>();
 
     // @OneToMany
     // @JoinColumn(name = "taskfiles", referencedColumnName = "task_id")
     // private TaskFiles taskFiles;
 
-    @Column(name = "iscompleted")
+    @Column(name = "iscompleted", nullable = false)
     private boolean isCompleted;
+    @Column(name = "istemplated", nullable = false)
+    private boolean isTemplated;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "parent_task_id")
     private Tasks parentTasks;
 
-    @OneToMany(mappedBy = "parentTasks")
+    @OneToMany(mappedBy = "parentTasks", cascade = CascadeType.ALL)
     private List<Tasks> subTasks = new ArrayList<>();
 
     public Tasks() {}
 
-    public Tasks(TaskStatus status, String taskName, Date startDate, Date endDate, Employees createdBy,
-            Employees responsible, boolean isCompleted, Tasks parentTasks) {
+    public Tasks(TaskStatus status, String taskName, Date startDate, Date endDate, String comment, Employees createdBy,
+            Employees responsible, boolean isCompleted, boolean isTemplated, Tasks parentTasks, List<Tasks> subTasks) {
         this.status = status;
         this.taskName = taskName;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.comment = comment;
         this.createdBy = createdBy;
         this.responsible = responsible;
         this.isCompleted = isCompleted;
+        this.isTemplated = isTemplated;
         this.parentTasks = parentTasks;
+        this.subTasks = subTasks;
     }
 
     public int getTaskId() {
@@ -97,6 +108,7 @@ public class Tasks {
     }
 
     public void setStartDate(Date startDate) {
+        if(startDate == null) this.startDate = Date.valueOf(LocalDate.now());
         this.startDate = startDate;
     }
 
@@ -105,6 +117,7 @@ public class Tasks {
     }
 
     public void setEndDate(Date endDate) {
+        if(endDate == null) this.endDate = Date.valueOf(LocalDate.now());
         this.endDate = endDate;
     }
 
@@ -124,11 +137,11 @@ public class Tasks {
         this.responsible = responsible;
     }
 
-    public boolean isCompleted() {
+    public boolean getIsCompleted() {
         return isCompleted;
     }
 
-    public void setCompleted(boolean isCompleted) {
+    public void setIsCompleted(boolean isCompleted) {
         this.isCompleted = isCompleted;
     }
 
@@ -156,6 +169,40 @@ public class Tasks {
         this.subTasks = subTasks;
     }
 
+    public boolean getIsTemplated() {
+        return isTemplated;
+    }
+
+    public void setIsTemplated(boolean isTemplated) {
+        this.isTemplated = isTemplated;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public List<AttributeTask> getAttributeTask() {
+        return attributeTask;
+    }
+
+    public void setAttributeTask(List<AttributeTask> attributeTask) {
+        this.attributeTask = attributeTask;
+    }
+
+    @Override
+    public String toString() {
+        return "Tasks [taskId=" + taskId + ", status=" + status + ", taskName=" + taskName + ", startDate=" + startDate
+                + ", endDate=" + endDate + ", comment=" + comment + ", createdBy=" + createdBy + ", responsible="
+                + responsible + ", attributeTask=" + attributeTask + ", isCompleted=" + isCompleted + ", isTemplated="
+                + isTemplated + ", parentTasks=" + parentTasks + ", subTasks=" + subTasks + "]";
+    }
+
+    
+    
     // public TaskFiles getTaskFiles() {
     //     return taskFiles;
     // }
@@ -163,5 +210,4 @@ public class Tasks {
     // public void setTaskFiles(TaskFiles taskFiles) {
     //     this.taskFiles = taskFiles;
     // }
-     
 }
