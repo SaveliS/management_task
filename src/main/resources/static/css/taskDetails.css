@@ -212,9 +212,6 @@ ul {
 .attachment li{
     border: 1px solid #000;
 }
-
-
-
 li.selected {
     background-color: #d0e8ff; 
     border-color: #007bff; 
@@ -231,4 +228,21 @@ a{
 }
 #fileInput {
     display: none;
+}
+.attribute-block{
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid rgb(221, 221, 221);
+    border-radius: 5px;
+}
+.attribute-block li {
+    margin-bottom: 15px;
+    font-size: 18px; 
+    line-height: 1.5; 
+    display: block ruby;
+}
+
+.attribute-block li:not(:last-child) {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px; 
 }

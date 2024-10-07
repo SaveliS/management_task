@@ -19,7 +19,7 @@ import jakarta.persistence.Table;
 public class TaskEmployee {
 
     @EmbeddedId
-    private TaskEmployeeKey TaskEmployeeKey;
+    private TaskEmployeeKey taskEmployeeKey;
 
     @ManyToOne()
     @MapsId("taskId")
@@ -46,7 +46,7 @@ public class TaskEmployee {
 
     public TaskEmployee(com.managment.task.model.TaskEmployee.TaskEmployeeKey taskEmployeeKey, Tasks tasks,
             Employees employees, Status complete, String comment) {
-        TaskEmployeeKey = taskEmployeeKey;
+        this.taskEmployeeKey = taskEmployeeKey;
         this.tasks = tasks;
         this.employees = employees;
         this.complete = complete;
@@ -114,11 +114,11 @@ public class TaskEmployee {
     }
 
     public TaskEmployeeKey getTaskEmployeeKey() {
-        return TaskEmployeeKey;
+        return taskEmployeeKey;
     }
 
     public void setTaskEmployeeKey(TaskEmployeeKey taskEmployeeKey) {
-        TaskEmployeeKey = taskEmployeeKey;
+        this.taskEmployeeKey = taskEmployeeKey;
     }
 
     public Tasks getTasks() {

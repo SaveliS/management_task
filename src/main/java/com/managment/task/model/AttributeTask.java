@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "task_attribute")
 public class AttributeTask {
+    
     @EmbeddedId
     private AttributeTaskKey attributeTaskKey;
     

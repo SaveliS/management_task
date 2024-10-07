@@ -1,14 +1,25 @@
 package com.managment.task.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.managment.task.model.AttributeTask;
 import com.managment.task.model.Employees;
+import com.managment.task.model.Groups;
 import com.managment.task.model.TaskEmployee;
 import com.managment.task.model.TaskEmployee.TaskEmployeeKey;
 import com.managment.task.model.TaskFiles;
@@ -44,13 +55,13 @@ public class TaskService {
     private EmployeeGroupsRepository employeeGroupsRepository;
 
     @Autowired
-    private GroupsRepository groupsRepository;
-
-    @Autowired
     private TaskFilesRepository taskFilesRepository;
 
     @Autowired
     private AttributeTaskRepository attributeTaskRepository;
+
+    @Autowired
+    private GroupsRepository groupsRepository;
 
     public TaskService(TasksRepository tasksRepository) {
         this.tasksRepository = tasksRepository;
@@ -60,8 +71,82 @@ public class TaskService {
         return tasksRepository.existsById(id);
     }
 
+    public static void removeDuplicateEmployees(List<Employees> newUserInTask){
+        Set<Integer> uniqueEmployeeIds = new HashSet<>();
+        Iterator<Employees> iterator = newUserInTask.iterator();
+
+        while(iterator.hasNext()){
+            Employees employee = iterator.next();
+            int employeeId = employee.getEmployeeId();
+
+            if (!uniqueEmployeeIds.add(employeeId)) {
+                // Если employeeId уже в Set, удаляем текущий элемент
+                iterator.remove();
+            }
+        }
+    }
+
+    /**
+     * @param task Новая задача, будет добавлена, если это НЕ шаблон
+     * @return Созданная заадача
+     */
     public Tasks addNewTask(Tasks task) {
         return tasksRepository.save(task);
+    }
+
+    public Tasks addNewTask(Tasks task, List<String> newGroup, List<String> newUser, UserDetails userDetails){
+        // Закрепляем создателя задачи
+        task.setCreatedBy(employeesRepository.findByLogin(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException("User not found")));
+        // Если задача, создана по шаблону то будет ID != 0
+        if(task.getTaskId() == 0){
+            addNewTask(task);
+        }
+
+        task.setTaskId(0);
+        // Сущности групп 
+        List<Groups> newGroupsInTask = new ArrayList<>(newGroup.size());
+        for (int i = 0; i < newGroup.size(); i++) {
+            newGroupsInTask.add(groupsRepository.findById(Integer.parseInt(newGroup.get(i))).orElseThrow(() -> new EntityNotFoundException("Group not found")));
+        } 
+        // Сущности сотрудников
+        List<Employees> newUsersInTask = new ArrayList<>();
+        for (int i = 0; i < newUser.size(); i++) {
+            newUsersInTask.add(employeesRepository.findById(Integer.parseInt(newUser.get(i))).orElseThrow(() -> new EntityNotFoundException("Employee not found")));
+        }
+        // Добавляем сотрудников закрепленных за группой к списку ответсвенных (испольнителей)
+        for (Groups value : newGroupsInTask) {
+            newUsersInTask.addAll(employeeGroupsRepository.findAllEmployeesByIdGroups(value.getGroupId()));
+        }
+        // Добавляем сотрудников из сущности
+        for (int i = 0; i < task.getEmployeeTask().size(); i++) {
+           newUsersInTask.add(employeesRepository.findById(task.getEmployeeTask().get(i).getTaskEmployeeKey().getEmployeeId()).orElseThrow(() -> new EntityNotFoundException("Employee not found")));
+        }
+        // Возможен дубль пользователя из группы и отдельно привязанного
+        removeDuplicateEmployees(newUsersInTask);
+
+        // Закрепляем 0 ID, чтобы был создан уникальный ключ
+        task.setTaskId(0);
+        // Не можем закрепить пользотвателя за задачей, пока задача не создана
+        task.setEmployeeTask(null);
+        List<AttributeTask> attributeTask = task.getAttributeTask();
+        // Не можем закрепить атрибуты за задачей, пока задача не создана
+        task.setAttributeTask(null);
+        task = addNewTask(task);
+
+        //Закрепляем атрибуты за задачей
+        for (AttributeTask value : attributeTask) {
+            value.getAttributeTaskKey().setTaskId(task.getTaskId());
+            attributeTaskRepository.save(value);
+        }
+
+        //Закрепляем пользователей за задачей
+        for (int i = 0; i < newUsersInTask.size(); i++) {
+            TaskEmployee.TaskEmployeeKey key = new TaskEmployeeKey(task.getTaskId(), newUsersInTask.get(i).getEmployeeId());
+            TaskEmployee newTaskEmployee = new TaskEmployee(key, task, newUsersInTask.get(i), TaskEmployee.Status.DEFAULT, null);
+            taskEmployeeRepository.save(newTaskEmployee);
+        }
+
+        return task;
     }
 
     public Iterable<Tasks> findAllTask() {
@@ -189,5 +274,21 @@ public class TaskService {
 
 
         return template;
+    }
+
+    public boolean addNewFileInTasks(Tasks newTasks,List<MultipartFile> files){
+        try {
+            for(MultipartFile value: files){
+                byte [] byteFile = value.getBytes();
+                Path path = Paths.get("D:\\Project\\file_task\\", value.getOriginalFilename());
+
+                Files.write(path, byteFile);
+                taskFilesRepository.save(new TaskFiles(newTasks.getTaskId(), path.toString()));
+            }
+            return true;
+        } catch (IOException  e) {
+            System.out.println(e.getLocalizedMessage());
+            return false;
+        }
     }
 }

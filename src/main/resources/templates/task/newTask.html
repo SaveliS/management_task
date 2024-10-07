@@ -11,66 +11,145 @@
 <body>
     <div th:replace="~{layout :: sidebar}"></div>
     <div th:replace="~{fragments/notification :: notification}"></div>
-    <div class="container">
-        <h1>Создание задачи</h1>
-        <div th:if="${messageFile}" class="message" id="messageFile">
-            <p th:text="${messageFile}"></p> 
-            <!-- Сообщение ошибки в случае, когда файл не выбран -->
-        </div>
-        <form th:action="@{/tasks/new}" th:object="${task}" method="post" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="statusId">Статус:</label>
-                <select id="statusId" th:field="*{statusId}" required>
-                    <option 
-                    th:each="value : ${task_status}"
-                    th:text="${value.getStatusName()}"
-                    th:value="${value.getStatusId()}"
-                    th:selected="${value.statusId==0}">Список статусов задач</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="taskName">Имя задачи:</label>
-                <input type="text" id="taskName" th:field="*{taskName}" required/>
-            </div>
-            <div class="form-group">
-                <label for="startDate">Дата начала:</label>
-                <input type="date" id="startDate" th:field="*{startDate}" required/>
-            </div>
-            <div class="form-group">
-                <label for="endDate">Дата конца:</label>
-                <input type="date" id="endDate" th:field="*{endDate}" required/>
-            </div>
-            <div class="form-group">
-                <label for="createdBy">Создатель:</label>
-                <select id="createdBy" th:field="*{createdBy}" required>
-                    <option
-                    th:each="value : ${employee}"
-                    th:text="${value.getLastName() + ' ' + value.getFirstName()}"
-                    th:value="${value.getEmployeeId()}"
-                    th:selected="${value.employeeId==0}"></option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="responsible">Ответсвенный:</label>
-                <select id="responsible" th:field="*{responsible}" required>
-                    <option
-                    th:each="value : ${employee}"
-                    th:text="${value.getLastName() + ' ' + value.getFirstName()}"
-                    th:value="${value.getEmployeeId()}"
-                    th:selected="${value.employeeId==0}"></option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="fileUpload">Добавить вложение:</label>
-                <input type="file" multiple="multiple" id="fileUpload" name="fileUpload"/>
-            </div>
-            <div class="buttons">
-                <button type="button" class="back-button" onclick="window.location.href='/'">Назад</button>
-                <button type="submit">Создать задачу</button>
-            </div>
-            <input type="hidden" th:field="*{parentTasks}">
-        </form>
+    <div th:if="${messageFile}" class="message" id="messageFile">
+        <p th:text="${messageFile}"></p> 
+        <!-- Сообщение ошибки в случае, когда файл не выбран -->
     </div>
-    <script src="/js/newTask.js"></script>
+        <div class="container">
+            <h1>Создание задачи</h1>
+            <form th:action="@{/tasks/new}" th:object="${task}" method="post" enctype="multipart/form-data">
+                <!-- Шаблон задачи -->
+                <div class="form-group">
+                    <label for="task-template">Выбрать шаблон:</label>
+                    <select id="task-template" th:field="*{taskId}" onchange="submitForm()">
+                        <option th:value="0">Не выбран</option>
+                        <option th:each="value : ${templates}" th:text="${value.getTaskName()}" th:value="${value.getTaskId()}"></option>
+                    </select>
+                </div>
+        
+                <!-- Статус задачи -->
+                <div class="form-group">
+                    <label for="statusId">Статус:</label>
+                    <select id="statusId" th:field="*{statusId}" required>
+                        <option th:each="value : ${task_status}" th:text="${value.getStatusName()}" th:value="${value.getStatusId()}"></option>
+                    </select>
+                </div>
+        
+                <!-- Имя задачи -->
+                <div class="form-group">
+                    <label for="taskName">Имя задачи:</label>
+                    <input type="text" id="taskName" th:field="*{taskName}" required />
+                </div>
+        
+                <!-- Даты задачи -->
+                <div class="form-group">
+                    <label for="startDate">Дата начала:</label>
+                    <input type="date" id="startDate" th:field="*{startDate}" required />
+                </div>
+        
+                <div class="form-group">
+                    <label for="endDate">Дата конца:</label>
+                    <input type="date" id="endDate" th:field="*{endDate}" required />
+                </div>
+        
+                <!-- Исполнители -->
+                <div class="form-group">
+                    <label for="responsible">Ответственный:</label>
+                    <select id="responsible" th:field="*{responsible}" required>
+                        <option 
+                        th:each="value : ${employee}" 
+                        th:text="${value.getLastName() + ' ' + value.getFirstName()}" 
+                        th:value="${value.getEmployeeId()}"
+                        th:selected="${value.employeeId==0}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fileUpload">Добавить вложение:</label>
+                    <div class="custom-file-upload">
+                        <label for="fileUpload" class="file-label">Выбрать файлы</label>
+                        <input type="file" multiple="multiple" id="fileUpload" name="fileUpload" class="file-input" onchange="updateFileList()"/>
+                    </div>
+                    <ul id="file-list" class="file-list"></ul>
+                </div>
+        
+                <!-- Выбор категории исполнителя -->
+                <div class="form-group">
+                    <label for="category">Категория:</label>
+                    <select id="category" th:field="${selectedResponsible}" th:value="${selectedResponsible}" name="selectedResponsible">
+                        <option value="">-- Выберите категорию --</option>
+                        <option value="groups" th:selected="${selectedResponsible == 'groups'}">Группы</option>
+                        <option value="users" th:selected="${selectedResponsible == 'users'}">Пользователи</option>
+                    </select>
+                </div>
+        
+                <!-- Группы -->
+                <div class="form-group" id="groups_selected" style="display: none;">
+                    <label for="group">Группы:</label>
+                    <select id="group" name="group" th:field="${groupsEmpl}">
+                        <option value="">-- Выберите группу --</option>
+                        <option th:each="group : ${groupsEmpl}" th:value="${group.groupId}" th:text="${group.groupName}"></option>
+                    </select>
+                    <button type="button" class="add-button" onclick="addGroup()">Добавить группы</button>
+                </div>
+        
+                <!-- Пользователи -->
+                <div class="form-group" id="users_selected" style="display: none;">
+                    <label for="user">Пользователи:</label>
+                    <select id="user" name="user" th:field="${employee}">
+                        <option value="">-- Выберите пользователя --</option>
+                        <option th:each="user : ${employee}" th:value="${user.employeeId}" th:text="${user.firstName + ' ' + user.lastName}"></option>
+                    </select>
+                    <button type="button" class="add-button" onclick="addUser()">Добавить пользователя</button>
+                </div>
+        
+                <!-- Список исполнителей -->
+                <div class="form-group">
+                    <label for="list-responsible">Исполнители:</label>
+                    <ul id="list-responsible">
+                        <li th:if="${task.taskId != 0}" 
+                            th:each="value, iterStat : *{employeeTask}">
+                            <input type="hidden" th:field="*{employeeTask[__${iterStat.index}__].taskEmployeeKey.employeeId}" th:text="${value.employees.firstName + ' ' + value.employees.lastName}" id="responsible_id">
+                        </li>
+                        <!-- Добавляем элементы списка через JS -->
+                    </ul>
+                </div>
+
+                <div class="form-group" th:if="${task.taskId != 0}">
+                    <label for="list-attribute">Дополнительные значения:</label>
+                    <ul id="list-responsible">
+                        <!-- <li class="group-attribute-li" th:each="value, iterStat : *{attributeTask}">
+                            <label for="attribute_name">Название:</label>
+                            <input type="text" name="attribute_name"
+                            th:field="*{attributeTask[__${iterStat.index}__].attributeTaskKey.attribute_name}" disabled id="attribute_name"/>
+                            <label for="attribute_value">Значение:</label>
+                            <input type="text" name="attribute_value" th:field="*{attributeTask[__${iterStat.index}__].attribute_value}" id="attribute_value"/>
+                        </li> -->
+                        <li class="group-attribute-li" th:each="value, iterStat : *{attributeTask}">
+                            <!-- Поле для составного ключа (attribute_name) -->
+                            <label for="attribute_name">Название:</label>
+                            <input type="text" name="attribute_name"
+                            th:field="*{attributeTask[__${iterStat.index}__].attributeTaskKey.attribute_name}" readonly id="attribute_name"/>
+                    
+                            <!-- Поле для значения атрибута -->
+                            <label for="attribute_value">Значение:</label>
+                            <input type="text" name="attribute_value"
+                            th:field="*{attributeTask[__${iterStat.index}__].attribute_value}" id="attribute_value"/>
+                        </li>
+                    </ul>
+                </div>
+        
+                <!-- Кнопки -->
+                <div class="buttons">
+                    <button type="button" class="back-button" onclick="window.location.href='/'">Назад</button>
+                    <button type="submit">Создать задачу</button>
+                </div>
+
+                <input type="hidden" th:field="*{parentTasks}">
+            </form>
+        </div>
+        <div th:if="${task.taskId == 0}">
+            <script src="/js/newTask.js"></script>
+        </div>
 </body>
 </html>

@@ -47,6 +47,17 @@
                         <button type="button" class="btn-reject" onclick="showSection('comments')">Отказать</button>
                     </div>
                 </div>
+                <div class="attribute-block">
+                    <h2>Дополнительные значения</h2>
+                    <ul class="actions" th:each="value : ${task.getAttributeTask()}">
+                        <li>
+                            <p>Название:</p>
+                            <p th:text="${value.attributeTaskKey.attribute_name}"></p>
+                            <p>Значение:</p>
+                            <p th:text="${value.attribute_value}"></p>
+                        </li>
+                    </ul>
+                </div>
                 <div class="actions-block">
                     <h2>Действие</h2>
                     <ul class="actions">

@@ -1,98 +1,239 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-image: url('/img/motil.gif'); /* Укажите путь к вашему GIF-файлу */
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
+/* Общий стиль для контейнера */
 .container {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
-    position: relative;
+    margin-left: 200px;
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #f4f4f9;
 }
+/* Заголовок */
 h1 {
     text-align: center;
+    font-size: 28px;
     color: #333;
+    margin-bottom: 20px;
 }
+
+/* Стиль для формы */
 form {
     display: flex;
     flex-direction: column;
 }
+
+/* Группы форм */
 .form-group {
-    display: flex;
-    align-items: center;
     margin-bottom: 15px;
-    position: relative;
 }
+
 label {
-    width: 30%;
-    color: #555;
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
 }
-input, select {
-    width: 70%;
-    padding: 8px;
+
+input[type="text"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
-}
-.autocomplete-list {
-    position: absolute;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    font-size: 16px;
+    color: #333;
     background-color: #fff;
-    max-height: 150px;
-    overflow-y: auto;
-    z-index: 1000;
-    width: 70%;
-    top: 100%;
-    left: 30%;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
 }
-.autocomplete-item {
-    padding: 8px;
-    cursor: pointer;
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #007bff;
+    outline: none;
 }
-.autocomplete-item:hover {
-    background-color: #f0f0f0;
-}
+
+/* Кнопки */
 .buttons {
     display: flex;
     justify-content: space-between;
+    margin-top: 20px;
 }
+
 button {
-    padding: 10px;
-    background-color: #28a745;
-    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    width: 48%;
+    transition: background-color 0.3s ease;
 }
+
 button:hover {
-    background-color: #218838;
+    background-color: #0056b3;
 }
+
 .back-button {
-    background-color: #dc3545;
+    background-color: #6c757d;
 }
+
 .back-button:hover {
+    background-color: #5a6268;
+}
+
+/* Кнопка добавления */
+.add-button {
+    margin-top: 5px;
+    font-size: 14px;
+    padding: 6px 12px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.add-button:hover {
+    background-color: #0056b3;
+}
+
+/* Стили для списков */
+#list-responsible {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px;
+    background-color: #ffffff;
+    border-radius: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+}
+
+/* Стили для элементов списка */
+#list-responsible li {
+    padding: 8px 12px;
+    margin: 5px;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Стили для кнопки удаления элемента списка */
+#list-responsible li button {
+    background-color: #dc3545;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+}
+/* Скрываем стандартное поле загрузки файла */
+/* Скрываем стандартное поле загрузки файла */
+.file-input {
+    display: none;
+}
+
+/* Стилизуем кастомную кнопку выбора файла */
+.custom-file-upload {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.file-label {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.file-label:hover {
+    background-color: #0056b3;
+}
+
+/* Стилизуем список файлов */
+.file-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px;
+    background-color: #ffffff;
+    border-radius: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+}
+
+/* Стили для элементов списка файлов */
+.file-list li {
+    padding: 8px 12px;
+    margin: 5px;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Стили для кнопки удаления файла */
+.file-list li button {
+    background-color: #dc3545;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.file-list li button:hover {
     background-color: #c82333;
 }
-.message {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #ffdd57;
-    padding: 10px;
-    border-radius: 5px;
-    color: #333;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+
+
+#list-responsible li button:hover {
+    background-color: #c82333;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
 }

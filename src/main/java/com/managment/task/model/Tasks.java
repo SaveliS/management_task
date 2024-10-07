@@ -46,6 +46,9 @@ public class Tasks {
     @OneToMany(mappedBy = "tasks", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttributeTask> attributeTask = new ArrayList<>();
 
+    @OneToMany(mappedBy = "tasks", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TaskEmployee> employeeTask = new ArrayList<>();
+
     // @OneToMany
     // @JoinColumn(name = "taskfiles", referencedColumnName = "task_id")
     // private TaskFiles taskFiles;
@@ -191,6 +194,14 @@ public class Tasks {
 
     public void setAttributeTask(List<AttributeTask> attributeTask) {
         this.attributeTask = attributeTask;
+    }
+
+    public List<TaskEmployee> getEmployeeTask() {
+        return employeeTask;
+    }
+
+    public void setEmployeeTask(List<TaskEmployee> employeeTask) {
+        this.employeeTask = employeeTask;
     }
 
     @Override

@@ -1,11 +1,10 @@
 package com.managment.task.controller;
 
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,9 +31,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.managment.task.model.TaskEmployee;
-import com.managment.task.model.TaskFiles;
 import com.managment.task.model.Tasks;
 import com.managment.task.service.EmployeeService;
+import com.managment.task.service.GroupService;
 import com.managment.task.service.TaskEmployeeService;
 import com.managment.task.service.TaskFileService;
 import com.managment.task.service.TaskService;
@@ -58,6 +57,9 @@ public class TaskController {
 
     @Autowired
     private TaskEmployeeService taskEmployeeService;
+
+    @Autowired
+    private GroupService groupService;
 
 
     @GetMapping("/{id}")
@@ -131,48 +133,59 @@ public class TaskController {
     }
     
     @GetMapping("/new")
-    public String createTask(Model model){
+    public String createTask(@RequestParam(name = "templateId", required = false) Integer idTemplate, Model model){
+        if(idTemplate != null && idTemplate.equals(idTemplate)){
+            model.addAttribute("task", taskService.findTaskById(idTemplate));
+        }else{
+            model.addAttribute("task", new Tasks());
+        }
+        model.addAttribute("groupsEmpl", groupService.findAllGroup());
         model.addAttribute("employee", employeeService.findAllEmployee());
         model.addAttribute("task_status", taskStatusService.findAllTaskStatus());
-        model.addAttribute("task", new Tasks());
+        model.addAttribute("templates", taskService.findAllTaskTemplate());
+        model.addAttribute("selectedResponsible", new String(""));
         return "task/newTask";
     }
+    
+    /**
+     * @param task - Задача которую необходимо создать 
+     * @param file - Файл закрепленный за задачей
+     * @param newGroup - Новые пользователи, которые необходимы при создании по шаблону
+     * @param newUsers - Новые группы, которые необходимы при создании по шаблону
+     * @param result - Валидация формы
+     * @param redirectAttributes - Сообщение о состояниее задачи <Добавлена,Не добавлена>
+     * @param model - Модель для возрата в случае ошибок
+     * @return - Возврат на страницу всех задач
+     */
+    @PostMapping(value = "/new", params = "!templateId")
+    public String createTask(@ModelAttribute("task") Tasks task, @RequestParam("fileUpload") List<MultipartFile> file,@RequestParam("selectedGroups") ArrayList<String> newGroup,@RequestParam("selectedUsers") ArrayList<String> newUsers,BindingResult result, RedirectAttributes redirectAttributes,@AuthenticationPrincipal UserDetails userDetails,Model model){
+    
+        // Todo: Переделать валидацию, либо удалить и проверять JS
+        // if(file.isEmpty() || file.get(0).isEmpty()){
+        //     model.addAttribute("messageFile", "Пожалуйста выберите файл");
+        //     model.addAttribute("employee", employeeService.findAllEmployee());
+        //     model.addAttribute("task_status", taskStatusService.findAllTaskStatus());
+        //     model.addAttribute("task", task);
+        //     return "task/newTask";
+        // }
 
-    @PostMapping("/new")
-    public String createTask(@ModelAttribute("task") Tasks task, @RequestParam("fileUpload") List<MultipartFile> file,
-        BindingResult result, RedirectAttributes redirectAttributes, Model model){
-        
-        if(file.isEmpty() || file.get(0).isEmpty()){
-            model.addAttribute("messageFile", "Пожалуйста выберите файл");
-            model.addAttribute("employee", employeeService.findAllEmployee());
-            model.addAttribute("task_status", taskStatusService.findAllTaskStatus());
-            model.addAttribute("task", task);
-            return "task/newTask";
-        }
+        // if(result.hasErrors()){
+        //     model.addAttribute("employee", employeeService.findAllEmployee());
+        //     model.addAttribute("task_status", taskStatusService.findAllTaskStatus());
+        //     model.addAttribute("task", task);
+        //     return "task/newTask";
+        // }
 
-        if(result.hasErrors()){
-            model.addAttribute("employee", employeeService.findAllEmployee());
-            model.addAttribute("task_status", taskStatusService.findAllTaskStatus());
-            model.addAttribute("task", task);
-            return "task/newTask";
-        }
+        Tasks newTasks = taskService.addNewTask(task,newGroup,newUsers,userDetails);
 
-        Tasks newTasks = taskService.addNewTask(task);
-
-        try {
-            for(MultipartFile value: file){
-                byte [] byteFile = value.getBytes();
-                Path path = Paths.get("D:\\Project\\file_task\\", value.getOriginalFilename());
-
-                Files.write(path, byteFile);
-                taskFileService.addNewTaskFiles(new TaskFiles(newTasks.getTaskId(), path.toString()));
-            }
-            redirectAttributes.addFlashAttribute("messageFile", "Файл успешно сохранен");
-        } catch (IOException  e) {
-            System.out.println(e.getLocalizedMessage());
-        }
+        if (taskService.addNewFileInTasks(newTasks, file)) redirectAttributes.addFlashAttribute("messageFile", "Файл успешно сохранен");
 
         return "redirect:/";
+    }
+
+    @PostMapping(value = "/new",params = "templateId" )
+    public String createTask(@RequestParam(name = "templateId") int idTemplate){
+        return "redirect:/tasks/new?templateId=" + idTemplate;
     }
 
     @GetMapping("/{id}/edit")
