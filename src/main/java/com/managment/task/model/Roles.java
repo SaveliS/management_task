@@ -25,6 +25,10 @@ public class Roles {
 
     public Roles() {}
 
+    public Roles(String nameRole) {
+        this.nameRole = nameRole;
+    }
+
     public Roles(String nameRole, Set<Employees> employees) {
         this.nameRole = nameRole;
         this.employees = employees;

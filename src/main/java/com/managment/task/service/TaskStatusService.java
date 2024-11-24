@@ -1,5 +1,7 @@
 package com.managment.task.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,5 +25,14 @@ public class TaskStatusService {
 
     public TaskStatus findById(int idTaskStatus){
         return taskStatusRepository.findByStatusId(idTaskStatus).orElseThrow(() -> new EntityNotFoundException("null"));
+    }
+
+    public Optional<TaskStatus> findByStatusId(String statusId){
+        try {
+            int taskStatusIdInt = Integer.parseInt(statusId);
+            return taskStatusRepository.findByStatusId(taskStatusIdInt);
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 }

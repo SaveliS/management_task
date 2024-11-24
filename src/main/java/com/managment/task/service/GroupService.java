@@ -1,6 +1,7 @@
 package com.managment.task.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,19 @@ public class GroupService {
 
     public Iterable<Groups> findAllGroup(){
         return groupsRepository.findAll();
+    }
+
+    /**
+     * @param groupId - идентификатор группы
+     * @return - группу с таким идентификатором
+     */
+    public Optional<Groups> findGroupById(String groupId){
+        try {
+            int groupIdInt = Integer.parseInt(groupId);
+            return groupsRepository.findById(groupIdInt);
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     @Transactional

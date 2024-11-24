@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,17 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.managment.task.model.AttributeTask;
 import com.managment.task.model.Employees;
 import com.managment.task.model.Groups;
 import com.managment.task.model.TaskEmployee;
-import com.managment.task.model.TaskEmployee.TaskEmployeeKey;
 import com.managment.task.model.TaskFiles;
 import com.managment.task.model.Tasks;
-import com.managment.task.repository.AttributeTaskRepository;
-import com.managment.task.repository.EmployeeGroupsRepository;
+import com.managment.task.model.TaskEmployee.TaskEmployeeKey;
 import com.managment.task.repository.EmployeesRepository;
-import com.managment.task.repository.GroupsRepository;
 import com.managment.task.repository.TaskEmployeeRepository;
 import com.managment.task.repository.TaskFilesRepository;
 import com.managment.task.repository.TaskStatusRepository;
@@ -43,6 +35,15 @@ public class TaskService {
     private TasksRepository tasksRepository;
 
     @Autowired
+    private EmployeeService employeeService;
+
+    @Autowired
+    private GroupService groupService;
+
+    @Autowired
+    private TaskStatusService taskStatusService;
+
+    @Autowired
     private TaskStatusRepository taskStatusRepository;
 
     @Autowired
@@ -52,16 +53,7 @@ public class TaskService {
     private EmployeesRepository employeesRepository;
 
     @Autowired
-    private EmployeeGroupsRepository employeeGroupsRepository;
-
-    @Autowired
     private TaskFilesRepository taskFilesRepository;
-
-    @Autowired
-    private AttributeTaskRepository attributeTaskRepository;
-
-    @Autowired
-    private GroupsRepository groupsRepository;
 
     public TaskService(TasksRepository tasksRepository) {
         this.tasksRepository = tasksRepository;
@@ -71,24 +63,9 @@ public class TaskService {
         return tasksRepository.existsById(id);
     }
 
-    public static void removeDuplicateEmployees(List<Employees> newUserInTask){
-        Set<Integer> uniqueEmployeeIds = new HashSet<>();
-        Iterator<Employees> iterator = newUserInTask.iterator();
-
-        while(iterator.hasNext()){
-            Employees employee = iterator.next();
-            int employeeId = employee.getEmployeeId();
-
-            if (!uniqueEmployeeIds.add(employeeId)) {
-                // Если employeeId уже в Set, удаляем текущий элемент
-                iterator.remove();
-            }
-        }
-    }
-
     /**
      * @param task Новая задача, будет добавлена, если это НЕ шаблон
-     * @return Созданная заадача
+     * @return Созданная задача
      */
     public Tasks addNewTask(Tasks task) {
         return tasksRepository.save(task);
@@ -96,57 +73,68 @@ public class TaskService {
 
     public Tasks addNewTask(Tasks task, List<String> newGroup, List<String> newUser, UserDetails userDetails){
         // Закрепляем создателя задачи
-        task.setCreatedBy(employeesRepository.findByLogin(userDetails.getUsername()).orElseThrow(() -> new EntityNotFoundException("User not found")));
+        task.setCreatedBy(
+            employeeService.findByLogin(userDetails.getUsername())
+            .orElseThrow(
+                () -> new EntityNotFoundException("User not found")
+            )
+        );
+
         // Если задача, создана по шаблону то будет ID != 0
         if(task.getTaskId() == 0){
             addNewTask(task);
         }
+        // Если статус = Шаблон, то переопределяем на 'Создана'
+        if(task.getStatus().getStatusId() == 7){
+            task.setStatus(taskStatusService.findById(1));
+        }
 
         task.setTaskId(0);
+        
+
         // Сущности групп 
-        List<Groups> newGroupsInTask = new ArrayList<>(newGroup.size());
-        for (int i = 0; i < newGroup.size(); i++) {
-            newGroupsInTask.add(groupsRepository.findById(Integer.parseInt(newGroup.get(i))).orElseThrow(() -> new EntityNotFoundException("Group not found")));
-        } 
+        List<Groups> newGroupsInTask = newGroup.stream()
+                .map(id -> groupService.findGroupById(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Entity not found")))
+                .collect(Collectors.toList());
+                
         // Сущности сотрудников
-        List<Employees> newUsersInTask = new ArrayList<>();
-        for (int i = 0; i < newUser.size(); i++) {
-            newUsersInTask.add(employeesRepository.findById(Integer.parseInt(newUser.get(i))).orElseThrow(() -> new EntityNotFoundException("Employee not found")));
-        }
+        List<Employees> newUsersInTask = newUser.stream()
+                .map(id -> employeeService.findEmployeeById(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Employee not found")))
+                .collect(Collectors.toList());
+
         // Добавляем сотрудников закрепленных за группой к списку ответсвенных (испольнителей)
-        for (Groups value : newGroupsInTask) {
-            newUsersInTask.addAll(employeeGroupsRepository.findAllEmployeesByIdGroups(value.getGroupId()));
-        }
-        // Добавляем сотрудников из сущности
-        for (int i = 0; i < task.getEmployeeTask().size(); i++) {
-           newUsersInTask.add(employeesRepository.findById(task.getEmployeeTask().get(i).getTaskEmployeeKey().getEmployeeId()).orElseThrow(() -> new EntityNotFoundException("Employee not found")));
-        }
+        newGroupsInTask.forEach(group -> 
+            newUsersInTask.addAll(
+                    employeeService.findEmployeeGroupsById(
+                        String.valueOf(group.getGroupId())
+                    )
+                )
+            );
+       
+        // Добавляем сотрудников из задачи
+        task.getEmployeeTask().forEach(employee -> 
+            newUsersInTask.add(
+                employeeService.findEmployeeById(
+                        String.valueOf(employee.getTaskEmployeeKey().getEmployeeId())
+                    )
+                .orElseThrow(
+                    () -> new EntityNotFoundException("Employee not found")
+                )
+            )
+        );
+
+        task.getAttributeTask().forEach(attribute -> 
+            attribute.setTasks(task)
+        );
+
         // Возможен дубль пользователя из группы и отдельно привязанного
-        removeDuplicateEmployees(newUsersInTask);
+        EmployeeService.removeDuplicateEmployees(newUsersInTask);
 
-        // Закрепляем 0 ID, чтобы был создан уникальный ключ
-        task.setTaskId(0);
-        // Не можем закрепить пользотвателя за задачей, пока задача не создана
-        task.setEmployeeTask(null);
-        List<AttributeTask> attributeTask = task.getAttributeTask();
-        // Не можем закрепить атрибуты за задачей, пока задача не создана
-        task.setAttributeTask(null);
-        task = addNewTask(task);
+        Tasks createdTask = addNewTask(task);
 
-        //Закрепляем атрибуты за задачей
-        for (AttributeTask value : attributeTask) {
-            value.getAttributeTaskKey().setTaskId(task.getTaskId());
-            attributeTaskRepository.save(value);
-        }
-
-        //Закрепляем пользователей за задачей
-        for (int i = 0; i < newUsersInTask.size(); i++) {
-            TaskEmployee.TaskEmployeeKey key = new TaskEmployeeKey(task.getTaskId(), newUsersInTask.get(i).getEmployeeId());
-            TaskEmployee newTaskEmployee = new TaskEmployee(key, task, newUsersInTask.get(i), TaskEmployee.Status.DEFAULT, null);
-            taskEmployeeRepository.save(newTaskEmployee);
-        }
-
-        return task;
+        return createdTask;
     }
 
     public Iterable<Tasks> findAllTask() {
@@ -242,36 +230,31 @@ public class TaskService {
     }
 
     public Tasks addNewTemplated(Tasks template,List<String> pinnedGroups, List<String> pinnedUser) {
-        List<AttributeTask> attributeInTask = template.getAttributeTask();
-        template.setAttributeTask(null);
-        template = addNewTask(template);
-        for (AttributeTask value : attributeInTask) {
-            value.getAttributeTaskKey().setTaskId(template.getTaskId());
-            attributeTaskRepository.save(value);
-        }
-        // Проблема: Если состав группы изменится то закрепленные пользователи не изменятся.
+        
+        template.getAttributeTask().forEach(attribute -> 
+            attribute.setTasks(template)
+        );
 
         // Если переданы группы, то разбиваем их на пользователей и закрепляем за шаблоном.
-        if(pinnedGroups.isEmpty() == false){
-            for (int i = 0; i < pinnedGroups.size(); i++) {
-                List<Employees> employeeInGroup = employeeGroupsRepository.findAllEmployeesByIdGroups(Integer.parseInt(pinnedGroups.get(i)));
-                for (Employees employees : employeeInGroup) {
-                    TaskEmployee.TaskEmployeeKey key = new TaskEmployeeKey(template.getTaskId(), employees.getEmployeeId());
-                    TaskEmployee newTaskEmployee = new TaskEmployee(key, template, employees, TaskEmployee.Status.DEFAULT, null);
-                    taskEmployeeRepository.save(newTaskEmployee);
-                }
-            }
-        }
-        // Если переданы пользователи, то закрепляем их за шаблоном.
-        if(pinnedUser.isEmpty() == false){
-            for (int i = 0; i < pinnedUser.size(); i++) {
-                Employees employee = employeesRepository.findById(Integer.parseInt(pinnedUser.get(i))).orElseThrow(() -> new EntityNotFoundException("Employee not found."));
-                TaskEmployee.TaskEmployeeKey key = new TaskEmployeeKey(template.getTaskId(), employee.getEmployeeId());
-                TaskEmployee newTaskEmployee = new TaskEmployee(key, template, employee, TaskEmployee.Status.DEFAULT, null);
-                taskEmployeeRepository.save(newTaskEmployee);
-            }
-        }
+        List<Employees> employeesInTempalate = pinnedGroups.stream()
+                .flatMap(id -> employeeService.findEmployeeGroupsById(id.toString()).stream())
+                .collect(Collectors.toList());
 
+        // Если переданы пользователи, то закрепляем их за шаблоном.
+        pinnedUser.forEach(userId -> {
+            Employees employees = employeeService.findByIdEmployee(Integer.parseInt(userId));
+            employeesInTempalate.add(employees);
+        });
+
+        EmployeeService.removeDuplicateEmployees(employeesInTempalate);
+
+        employeesInTempalate.forEach(user -> {
+            TaskEmployeeKey key = new TaskEmployeeKey(template.getTaskId(), user.getEmployeeId());
+            TaskEmployee newTaskEmployee = new TaskEmployee(key, template, user, TaskEmployee.Status.DEFAULT, null);
+            template.getEmployeeTask().add(newTaskEmployee);
+        });
+
+        tasksRepository.save(template);
 
         return template;
     }

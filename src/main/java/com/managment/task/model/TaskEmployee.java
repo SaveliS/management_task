@@ -23,12 +23,12 @@ public class TaskEmployee {
 
     @ManyToOne()
     @MapsId("taskId")
-    @JoinColumn(name = "tasks_id")
+    @JoinColumn(name = "tasks_id", referencedColumnName = "taskid")
     private Tasks tasks;
     
     @ManyToOne()
     @MapsId("employeeId")
-    @JoinColumn(name = "employees_id")
+    @JoinColumn(name = "employees_id", referencedColumnName = "employeeid")
     private Employees employees;
 
     @Column(name = "complete")
@@ -57,23 +57,23 @@ public class TaskEmployee {
     public static class TaskEmployeeKey implements Serializable{
 
         @Column(name = "task_id")
-        private int taskId;
+        private Integer taskId;
 
         @Column(name = "employee_id")
         private int employeeId;
 
         public TaskEmployeeKey(){}
 
-        public TaskEmployeeKey(int task_id,int employee_id){
+        public TaskEmployeeKey(Integer task_id,int employee_id){
             this.taskId = task_id;
             this.employeeId = employee_id;
         }
 
-        public int getTaskId() {
+        public Integer getTaskId() {
             return taskId;
         }
 
-        public void setTaskId(int taskId) {
+        public void setTaskId(Integer taskId) {
             this.taskId = taskId;
         }
 

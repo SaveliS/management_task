@@ -8,6 +8,7 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 
 @Entity
@@ -21,7 +22,8 @@ public class AttributeTask {
     private String attribute_value;
 
     @ManyToOne
-    @JoinColumn(name = "task_id", insertable = false, updatable = false)
+    @MapsId("taskId")
+    @JoinColumn(name = "taskid", referencedColumnName = "taskid")
     private Tasks tasks;
 
     public AttributeTask() {
@@ -36,8 +38,8 @@ public class AttributeTask {
     @Embeddable
     public static class AttributeTaskKey implements Serializable{
 
-        @Column(name = "task_id")
-        private int taskId;
+        @Column(name = "taskid")
+        private Integer taskId;
 
         @Column(name = "attribute_name")
         private String attribute_name;
@@ -45,16 +47,16 @@ public class AttributeTask {
         public AttributeTaskKey() {
         }
 
-        public AttributeTaskKey(int taskId, String attribute_name) {
+        public AttributeTaskKey(Integer taskId, String attribute_name) {
             this.taskId = taskId;
             this.attribute_name = attribute_name;
         }
 
-        public int getTaskId() {
+        public Integer getTaskId() {
             return taskId;
         }
 
-        public void setTaskId(int taskId) {
+        public void setTaskId(Integer taskId) {
             this.taskId = taskId;
         }
 

@@ -22,10 +22,7 @@ public class Tasks {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "taskid")
-    private int taskId;
-    @ManyToOne
-    @JoinColumn(name = "statusid", referencedColumnName = "statusid")
-    private TaskStatus status;
+    private Integer taskId;
     @Column(name = "taskname")
     private String taskName;
     @Column(name = "startdate")
@@ -34,6 +31,10 @@ public class Tasks {
     private Date endDate;
     @Column(name = "comment")
     private String comment;
+
+    @ManyToOne
+    @JoinColumn(name = "statusid", referencedColumnName = "statusid")
+    private TaskStatus status; // Статус задачи
 
     @ManyToOne
     @JoinColumn(name = "createdby" , referencedColumnName = "employeeid")
@@ -82,11 +83,11 @@ public class Tasks {
         this.subTasks = subTasks;
     }
 
-    public int getTaskId() {
+    public Integer getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(int taskId) {
+    public void setTaskId(Integer taskId) {
         this.taskId = taskId;
     }
 
@@ -202,6 +203,16 @@ public class Tasks {
 
     public void setEmployeeTask(List<TaskEmployee> employeeTask) {
         this.employeeTask = employeeTask;
+    }
+
+    public void addAttribute(AttributeTask attribute){
+        attributeTask.add(attribute);
+        attribute.setTasks(this);
+    }
+
+    public void removeAttribute(AttributeTask attribute){
+        attributeTask.remove(attribute);
+        attribute.setTasks(null);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.managment.task.config;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,8 +25,8 @@ public class CustomEmployeeDetailsService implements UserDetailsService{
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Employees employee = employeesRepository.findByLogin(username)
             .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден."));
-        
-        return new org.springframework.security.core.userdetails.User(
+
+        return new User(
             employee.getLogin(),
             employee.getPassword(),
             employee.isEnable(),

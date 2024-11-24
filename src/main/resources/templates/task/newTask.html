@@ -118,13 +118,6 @@
                 <div class="form-group" th:if="${task.taskId != 0}">
                     <label for="list-attribute">Дополнительные значения:</label>
                     <ul id="list-responsible">
-                        <!-- <li class="group-attribute-li" th:each="value, iterStat : *{attributeTask}">
-                            <label for="attribute_name">Название:</label>
-                            <input type="text" name="attribute_name"
-                            th:field="*{attributeTask[__${iterStat.index}__].attributeTaskKey.attribute_name}" disabled id="attribute_name"/>
-                            <label for="attribute_value">Значение:</label>
-                            <input type="text" name="attribute_value" th:field="*{attributeTask[__${iterStat.index}__].attribute_value}" id="attribute_value"/>
-                        </li> -->
                         <li class="group-attribute-li" th:each="value, iterStat : *{attributeTask}">
                             <!-- Поле для составного ключа (attribute_name) -->
                             <label for="attribute_name">Название:</label>
@@ -148,7 +141,7 @@
                 <input type="hidden" th:field="*{parentTasks}">
             </form>
         </div>
-        <div th:if="${task.taskId == 0}">
+        <div th:if="${task.taskId != 0}">
             <script src="/js/newTask.js"></script>
         </div>
 </body>
