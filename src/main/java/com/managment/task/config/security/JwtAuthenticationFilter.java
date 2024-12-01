@@ -1,4 +1,4 @@
-package com.managment.task.config;
+package com.managment.task.config.security;
 
 import java.io.IOException;
 
@@ -32,11 +32,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,
-                    @NonNull FilterChain filterChain) throws IOException, ServletException{
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) 
+                                        throws IOException, ServletException{
 
         Cookie [] cookies;
         String jwt;
+        
+        if(request.getCookies() == null){
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if(request.getCookies().length == 0){
             filterChain.doFilter(request, response);

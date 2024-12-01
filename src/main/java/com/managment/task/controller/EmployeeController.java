@@ -12,6 +12,7 @@ import com.managment.task.model.Employees;
 import com.managment.task.service.DepartmentsService;
 import com.managment.task.service.EmployeeService;
 import com.managment.task.service.PositionsService;
+import com.managment.task.service.RolesService;
 
 @Controller
 @RequestMapping("/employee")
@@ -26,6 +27,9 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
+    @Autowired
+    private RolesService rolesService;
+
 
     @GetMapping()
     public String homeUser(Model model){
@@ -37,13 +41,14 @@ public class EmployeeController {
     public String createEmployee(Model model){
         model.addAttribute("departments", departmentsService.findAllDepartment());
         model.addAttribute("positions", positionsService.findAllPosition());
+        model.addAttribute("roles", rolesService.getAllRoles());
         model.addAttribute("employee", new Employees());
         return "employees/newEmployee";
     }
 
     @PostMapping("/new")
-    public String createEmployee(@ModelAttribute("departments") Employees employees){
-        employeeService.addNewEmployee(employees);
+    public String createEmployee(@ModelAttribute("employee") Employees employees){
+        employeeService.create(employees);
         return "redirect:/";
     }
     

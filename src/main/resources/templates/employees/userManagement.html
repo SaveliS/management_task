@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пользователи</title>
-    <link rel="stylesheet" th:href="@{/css/userManagement.css}" type="text/css">
     <link th:replace="~{layout :: style_layout}">
+    <link th:replace="~{fragments/notification :: style_notification}">
+    <link rel="stylesheet" th:href="@{/css/userManagement.css}" type="text/css">
 </head>
 <body> 
     <div th:replace="~{layout :: sidebar}"></div>
+    <div th:replace="~{fragments/notification :: notification}"></div>
     <div class="content">
         <h1>Пользователи</h1>
         <div class="button-container">
@@ -26,8 +28,8 @@
             <tbody>
                 <tr th:each="value : ${employee}">
                     <td th:text="${value.firstName + ' ' + value.lastName}"></td>
-                    <td th:text="${value.departmentId.departmentName}"></td>
-                    <td th:text="${value.positionId.positionName}"></td>
+                    <td th:text="${value.departmentId?.departmentName ?: 'Отдел не задан'}"></td>
+                    <td th:text="${value.positionId?.positionName ?: 'Должность не задана'}"></td>
                     <td>
                         <button onclick="editUser(this)">Редактировать</button>
                         <button onclick="saveUser(this)">Сохранить</button>

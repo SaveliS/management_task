@@ -1,4 +1,4 @@
-package com.managment.task.config;
+package com.managment.task.config.security;
 
 import java.util.stream.Collectors;
 

@@ -11,9 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.managment.task.config.CustomEmployeeDetailsService;
+import com.managment.task.config.security.CustomEmployeeDetailsService;
+import com.managment.task.exception.LoginAlreadyExistsException;
+import com.managment.task.exception.RolesNotSelectedException;
 import com.managment.task.model.Employees;
 import com.managment.task.model.TaskEmployee;
 import com.managment.task.repository.EmployeeGroupsRepository;
@@ -27,6 +31,8 @@ public class EmployeeService {
     private final EmployeesRepository employeesRepository;
 
     private final EmployeeGroupsRepository employeeGroupsRepository;
+
+    private PasswordEncoder passwordEncoder;
 
     public static void removeDuplicateEmployees(List<Employees> newUserInTask){
         Set<Integer> uniqueEmployeeIds = new HashSet<>();
@@ -58,17 +64,17 @@ public class EmployeeService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
-    public void addNewEmployee(Employees employees){
-        employeesRepository.save(employees);
-    }
+    // public void addNewEmployee(Employees employees){
+    //     employeesRepository.save(employees);
+    // }
 
     /**
      * Сохранение пользователя
      *
      * @return сохраненный пользователь
      */
-    public Employees save(Employees employees){
-       return employeesRepository.save(employees); 
+    private Employees save(Employees employees){
+        return employeesRepository.save(employees); 
     }
 
     public Optional<Employees> findByLogin(String login){
@@ -140,8 +146,15 @@ public class EmployeeService {
      */
     public Employees create(Employees employees){
         if(employeesRepository.existsByLogin(employees.getLogin())){
-            // Заменить на исключения
+            throw new LoginAlreadyExistsException("Логин " + employees.getLogin() + " уже существует в системе.");
         }
+
+        if(employees.getRoles().isEmpty() || employees.getRoles() == null){
+            throw new RolesNotSelectedException("Необходимо выбрать хотя бы одну роль.");
+        }
+
+        passwordEncoder = new BCryptPasswordEncoder();
+        employees.setPassword(passwordEncoder.encode(employees.getPassword()));
 
         return save(employees);
     }

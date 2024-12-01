@@ -1,4 +1,4 @@
-package com.managment.task.config;
+package com.managment.task.config.security;
 
 import java.util.List;
 
@@ -16,7 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
-import com.managment.task.config.security.CustomAuthenticationEntryPoint;
 import com.managment.task.service.EmployeeService;
 
 @Configuration
@@ -49,8 +48,8 @@ public class SecurityConfig{
         )
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/css/**","/js/**","/img/**","/login").permitAll()
-            .requestMatchers("/template").hasAnyRole("MANAGER","ADMIN")
-            .requestMatchers("/employee").hasRole("ADMIN")
+            // .requestMatchers("/template").hasAnyRole("MANAGER","ADMIN")
+            // .requestMatchers("/employee").hasRole("ADMIN")
             .anyRequest().authenticated())
         .authenticationProvider(authenticationProvider())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

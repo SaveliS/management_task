@@ -4,45 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Новый сотрудник</title>
+    <link th:replace="~{layout :: style_layout}">
+    <link th:replace="~{fragments/notification :: style_notification}">
     <link rel="stylesheet" th:href="@{/css/newEmpoloyee.css}" type="text/css">
 </head>
 <body>
-    <div class="container">
+    <div th:replace="~{layout :: sidebar}"></div>
+    <div th:replace="~{fragments/notification :: notification}"></div>
+
+    <div class="content">
         <h1>Регистрация сотрудника</h1>
-        <form th:action="@{/employee/new}" th:object="${employee}" method="post">
+        <form th:action="@{/employee/new}" th:object="${employee}" method="post" class="form">
             <div class="form-group">
-                <label for="firstName">Имя:</label>
-                <input type="text" id="firstName" th:field="*{firstName}" required/>
+                <label for="firstName" class="form-label">Имя:</label>
+                <input type="text" id="firstName" th:field="*{firstName}" class="form-input" placeholder="Введите имя" required/>
             </div>
             <div class="form-group">
-                <label for="lastName">Фамилия:</label>
-                <input type="text" id="lastName" th:field="*{lastName}" required/>
+                <label for="lastName" class="form-label">Фамилия:</label>
+                <input type="text" id="lastName" th:field="*{lastName}" class="form-input" placeholder="Введите фамилию" required/>
             </div>
             <div class="form-group">
-                <label for="departmentId">Отдел:</label>
-                <select id="departmentId" th:field="*{departmentId}" required>
+                <label for="login" class="form-label">Логин:</label>
+                <input type="text" id="login" th:field="*{login}" class="form-input" placeholder="Запрещено, пока имя и фамилия не заполнены" required disabled/>
+            </div>
+            <div class="form-group">
+                <label for="password" class="form-label">Пароль:</label>
+                <input type="text" id="password" th:field="*{password}" class="form-input" placeholder="Введите пароль" required/>
+            </div>
+            <div class="form-group">
+                <label for="departmentId" class="form-label">Отдел:</label>
+                <select id="departmentId" th:field="*{departmentId}" class="form-select" required>
+                    <option value="" disabled selected>Список отделов компании</option>
                     <option 
-                    th:each="value : ${departments}"
-                    th:text="${value.getDepartmentName()}"
-                    th:value="${value.getDepartmentId()}"
-                    th:selected="${value.departmentId==0}">Список отделов компании</option>
+                        th:each="value : ${departments}"
+                        th:text="${value.getDepartmentName()}"
+                        th:value="${value.getDepartmentId()}"
+                        th:selected="${value.departmentId == 0}">
+                    </option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="positionId">Позиция:</label>
-                <select id="positionId" th:field="*{positionId}" required>
+                <label for="positionId" class="form-label">Позиция:</label>
+                <select id="positionId" th:field="*{positionId}" class="form-select" required>
+                    <option value="" disabled selected>Список должностей компании</option>
                     <option 
-                    th:each="value : ${positions}"
-                    th:text="${value.getPositionName()}"
-                    th:value="${value.getPositionId()}"
-                    th:selected="${value.positionId==0}">Список должностей компании</option>
+                        th:each="value : ${positions}"
+                        th:text="${value.getPositionName()}"
+                        th:value="${value.getPositionId()}"
+                        th:selected="${value.positionId == 0}">
+                    </option>
                 </select>
             </div>
-            <div class="buttons">
-                <button type="button" class="back-button" onclick="window.location.href='/'">Назад</button>
-                <button type="submit">Регистрация</button>
+            <div class="form-group">
+                <label for="roleId" class="form-label">Роли сотрудника:</label>
+                <table>
+                    <tr>
+                        <th>Название роли</th>
+                        <th>Выбор</th>
+                    </tr>
+                    <tr th:each="value,iterStat : ${roles}">
+                        <td th:text="${value.getNameRole()}"></td>
+                        <td>
+                            <input th:field="*{roles}" th:value="${roles[__${iterStat.index}__].id}" type="checkbox">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Назад</button>
+                <button type="submit" class="btn btn-primary">Регистрация</button>
             </div>
         </form>
     </div>
+    <script src="/js/newEmployee.js"></script>
 </body>
 </html>
